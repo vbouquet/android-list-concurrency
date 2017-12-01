@@ -10,17 +10,20 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import fr.parisnanterre.pmoo.androidm2td1.R;
 import fr.parisnanterre.pmoo.androidm2td1.adapter.FilmAdapter;
 import fr.parisnanterre.pmoo.androidm2td1.adapter.FilmCollection;
 import fr.parisnanterre.pmoo.androidm2td1.model.Film;
 import fr.parisnanterre.pmoo.androidm2td1.task.DownloadImage;
+import fr.parisnanterre.pmoo.androidm2td1.thread.MyThreadFactory;
 
-public class ListFilmAsyncTaskActivity extends AppCompatActivity {
+public class ListFilmThreadPoolExecutorActivity extends AppCompatActivity {
     private FilmAdapter filmAdapter;
     private static final String URLImage = "https://picsum.photos/100/50?random";
-//    private static final String URLImage = "http://lorempixel.com/100/50/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +45,13 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.i("DEBUG", "listView, onLongClick");
                 Film film = filmAdapter.getItem(i);
-                DownloadImage task = new DownloadImage(ListFilmAsyncTaskActivity.this, filmAdapter, film);
-                // Execute task or execute on executor
-                // task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, URLImage);
-                task.execute(URLImage);
+                DownloadImage task = new DownloadImage(ListFilmThreadPoolExecutorActivity.this,
+                        filmAdapter, film);
+                task.executeOnExecutor(
+                        new ThreadPoolExecutor(3, 5,
+                                20, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+                                new MyThreadFactory()),
+                        URLImage);
                 Toast.makeText(getApplicationContext(),
                         String.format("Update image on film: %s", film.title), Toast.LENGTH_SHORT).show();
                 listView.setSelection(i);
@@ -68,10 +74,13 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i("DEBUG", "onClick updateButton !!");
                 for (int i=0; i < filmAdapter.getCount(); i++) {
-                    DownloadImage task = new DownloadImage(ListFilmAsyncTaskActivity.this, filmAdapter, filmAdapter.getItem(i));
-                    // Execute task or execute on executor
-                    // task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, URLImage);
-                    task.execute(URLImage);
+                    DownloadImage task = new DownloadImage(ListFilmThreadPoolExecutorActivity.this,
+                            filmAdapter, filmAdapter.getItem(i));
+                    task.executeOnExecutor(
+                            new ThreadPoolExecutor(3, 5,
+                                    5000, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(),
+                                    new MyThreadFactory()),
+                            URLImage);
                 }
             }
         });

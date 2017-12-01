@@ -20,7 +20,7 @@ import fr.parisnanterre.pmoo.androidm2td1.task.DownloadImageThread;
 
 public class ListFilmThreadActivity extends AppCompatActivity {
     private static FilmAdapter filmAdapter;
-    private static final String URLImage = "http://lorempixel.com/100/50/";
+    private static final String URLImage = "https://picsum.photos/100/50?random";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +41,11 @@ public class ListFilmThreadActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.i("DEBUG", "listView, onLongClick");
-                Runnable run = new DownloadImageThread(ListFilmThreadActivity.this, filmAdapter, filmAdapter.getItem(i), URLImage);
+                Film film = filmAdapter.getItem(i);
+                Runnable run = new DownloadImageThread(ListFilmThreadActivity.this, filmAdapter, film, URLImage);
                 new Thread(run).start();
                 Toast.makeText(getApplicationContext(),
-                        String.format("Update image on film: %s", filmAdapter.getItem(i).title), Toast.LENGTH_SHORT).show();
+                        String.format("Update image on film: %s", film.title), Toast.LENGTH_SHORT).show();
                 listView.setSelection(i);
                 return true;
             }
@@ -79,9 +80,5 @@ public class ListFilmThreadActivity extends AppCompatActivity {
                 filmAdapter.notifyDataSetChanged();
             }
         });
-    }
-
-    public void updateAdapter() {
-        filmAdapter.notifyDataSetChanged();
     }
 }

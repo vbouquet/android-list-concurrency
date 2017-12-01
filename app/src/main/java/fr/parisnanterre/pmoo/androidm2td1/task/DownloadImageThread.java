@@ -2,7 +2,6 @@ package fr.parisnanterre.pmoo.androidm2td1.task;
 
 import android.app.Activity;
 import android.graphics.BitmapFactory;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 
@@ -10,6 +9,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import android.os.Handler;
+import android.widget.ArrayAdapter;
 
 import fr.parisnanterre.pmoo.androidm2td1.adapter.FilmAdapter;
 import fr.parisnanterre.pmoo.androidm2td1.model.Film;
@@ -35,29 +35,48 @@ public class DownloadImageThread implements Runnable {
      * Update adapter on main UI thread
      */
     private void updateAdapter() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                adapter.get().notifyDataSetChanged();
-            }
-        });
+        final ArrayAdapter adapter = this.adapter.get();
+        if (activity.get() != null && adapter != null && this.film.get() != null) {
+            // 2 options: call runOnUiThread or use handler.post(...)
+            /*
+            this.activity.get().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            });
+            */
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i("DEBUG", "run, updateApter OK");
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        } else {
+            Log.i("DEBUG", "run, updateApter CANCEL");
+        }
     }
 
     @Override
     public void run() {
-        if (film.get() != null) {
-            Log.i("DEBUG", "doInBackground, SUCCESS, film: " + film.get().getTitle());
+        Film film = this.film.get();
+        if (film != null) {
             try {
                 URL url = new URL(this.url);
-                if (this.activity.get() != null && this.adapter.get() != null && this.film.get() != null) {
-                    film.get().setImage(BitmapFactory.decodeStream(url.openConnection().getInputStream()));
+                if (this.activity.get() != null && this.adapter.get() != null) {
+                    Log.i("DEBUG", "run, DOWNLOADING, BEGIN, film: " + film.getTitle());
+                    film.setImage(BitmapFactory.decodeStream(url.openConnection().getInputStream()));
+                    Log.i("DEBUG", "run, DOWNLOADING, END, film: " + film.getTitle());
                     updateAdapter();
+                } else {
+                    Log.i("DEBUG", "run, DOWNLOADING, CANCEL");
                 }
             } catch (IOException e) {
-                Log.i("EXCEPTION", String.format("doInBackGround, film: %s, error: %s", film.get().getTitle(), e.getMessage()));
+                Log.i("EXCEPTION", String.format("run, DOWNLOADING, film: %s, error: %s", film.getTitle(), e.getMessage()));
             }
         } else {
-            Log.i("DEBUG", "doInBackground, CANCEL, film = null");
+            Log.i("DEBUG", "run, CANCEL, film = null");
         }
     }
 }

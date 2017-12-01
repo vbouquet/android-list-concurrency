@@ -28,17 +28,18 @@ public class DownloadImage extends AsyncTask<String, Integer, Bitmap> {
 
     @Override
     protected Bitmap doInBackground(String... URLS) {
-        if (film.get() != null) {
-            Log.i("DEBUG", "doInBackground, SUCCESS, film: " + film.get().getTitle());
+        Film filmSR = this.film.get();
+        if ( filmSR != null) {
+            Log.i("DEBUG", "doInBackground, DOWNLOADING, film: " + filmSR.getTitle());
             try {
                 URL url = new URL(URLS[0]);
                 return BitmapFactory.decodeStream(url.openConnection().getInputStream());
             } catch (IOException e) {
-                Log.i("EXCEPTION", String.format("doInBackGround, film: %s, error: %s", film.get().getTitle(), e.getMessage()));
+                Log.i("EXCEPTION", String.format("doInBackGround, film: %s, error: %s", filmSR.getTitle(), e.getMessage()));
                 return null;
             }
         }
-        Log.i("DEBUG", "doInBackground, CANCEL, film = null");
+        Log.i("DEBUG", "doInBackground, DOWNLOAD CANCEL, film = null");
         return null;
     }
 
