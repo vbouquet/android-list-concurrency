@@ -36,7 +36,8 @@ public class DownloadImageThread implements Runnable {
      */
     private void updateAdapter() {
         final ArrayAdapter adapter = this.adapter.get();
-        if (activity.get() != null && adapter != null && this.film.get() != null) {
+        final Activity activity = this.activity.get();
+        if (activity != null && adapter != null && this.film.get() != null) {
             // 2 options: call runOnUiThread or use handler.post(...)
             /*
             this.activity.get().runOnUiThread(new Runnable() {

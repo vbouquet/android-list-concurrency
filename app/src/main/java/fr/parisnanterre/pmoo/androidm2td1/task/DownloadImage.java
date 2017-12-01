@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -45,10 +46,15 @@ public class DownloadImage extends AsyncTask<String, Integer, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
-        if (this.activity.get() != null && this.adapter.get() != null && this.film.get() != null) {
-            Log.i("DEBUG", String.format("onPostExecute, SUCCESS, film: %s", film.get().getTitle()));
-            film.get().setImage(bitmap);
-            adapter.get().notifyDataSetChanged();
+        Activity activity = this.activity.get();
+        ArrayAdapter adapter = this.adapter.get();
+        Film film = this.film.get();
+        if (activity != null && adapter != null && film != null) {
+            Log.i("DEBUG", String.format("onPostExecute, SUCCESS, film: %s", film.getTitle()));
+            //TODO Il vaut mieux faire l'affectation d'image en dehors du thread UI donc dans la
+            //TODO méthode doInBackGround
+            film.setImage(bitmap);
+            adapter.notifyDataSetChanged();
         } else {
             Log.i("DEBUG", "onPostExecute, CANCEL");
         }
