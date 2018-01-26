@@ -1,5 +1,7 @@
 package fr.parisnanterre.pmoo.androidm2td1.activity;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,13 +11,20 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.orm.SugarContext;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import fr.parisnanterre.pmoo.androidm2td1.R;
 import fr.parisnanterre.pmoo.androidm2td1.adapter.FilmAdapter;
 import fr.parisnanterre.pmoo.androidm2td1.adapter.FilmCollection;
 import fr.parisnanterre.pmoo.androidm2td1.model.Film;
 import fr.parisnanterre.pmoo.androidm2td1.task.DownloadImage;
+import fr.parisnanterre.pmoo.androidm2td1.task.StoreFilm;
 
 public class ListFilmAsyncTaskActivity extends AppCompatActivity {
     private FilmAdapter filmAdapter;
@@ -27,8 +36,18 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        filmAdapter = new FilmAdapter(this, new ArrayList<Film>());
-        filmAdapter.add(FilmCollection.getRandomFilm());
+//        this.deleteDatabase("films.db");
+        SugarContext.init(this);
+
+        List<Film> films = Film.listAll(Film.class);
+        for (Film f : films) {
+            if (f.bImage != null) {
+                ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(f.bImage);
+                f.image = BitmapFactory.decodeStream(arrayInputStream);
+            }
+        }
+        filmAdapter = new FilmAdapter(this, films);
+//        filmAdapter.add(FilmCollection.getRandomFilm());
 
         final ListView listView = findViewById(R.id.activity_main_listview);
         listView.setAdapter(filmAdapter);
@@ -58,6 +77,8 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i("DEBUG", "onClick addButton !!");
                 Film film = FilmCollection.getRandomFilm();
+                StoreFilm task = new StoreFilm(film, null);
+                task.execute();
                 filmAdapter.add(film);
                 filmAdapter.notifyDataSetChanged();
             }
@@ -71,7 +92,7 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
                     DownloadImage task = new DownloadImage(ListFilmAsyncTaskActivity.this, filmAdapter, filmAdapter.getItem(i));
                     // Execute task or execute on executor
                     // task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, URLImage);
-                    task.execute(URLImage);
+                    task.execute(URLImage, "YES");
                 }
             }
         });
@@ -80,9 +101,16 @@ public class ListFilmAsyncTaskActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i("DEBUG", "clear films");
+
                 filmAdapter.clear();
                 filmAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SugarContext.terminate();
     }
 }

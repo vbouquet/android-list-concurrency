@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -20,15 +21,18 @@ public class DownloadImage extends AsyncTask<String, Integer, Bitmap> {
     private WeakReference<Film> film;
     private final WeakReference<Activity> activity;
     private final WeakReference<FilmAdapter> adapter;
-
+    private String test;
     public DownloadImage(Activity activity, FilmAdapter adapter, Film film) {
         this.activity = new WeakReference<>(activity);
         this.adapter = new WeakReference<>(adapter);
         this.film = new WeakReference<>(film);
+        this.test = "NO";
     }
 
     @Override
     protected Bitmap doInBackground(String... URLS) {
+        if (URLS.length > 1)
+            this.test = URLS[1];
         Film filmSR = this.film.get();
         if ( filmSR != null) {
             Log.i("DEBUG", "doInBackground, DOWNLOADING, film: " + filmSR.getTitle());
@@ -53,8 +57,18 @@ public class DownloadImage extends AsyncTask<String, Integer, Bitmap> {
             Log.i("DEBUG", String.format("onPostExecute, SUCCESS, film: %s", film.getTitle()));
             //TODO Il vaut mieux faire l'affectation d'image en dehors du thread UI donc dans la
             //TODO méthode doInBackGround
-            film.setImage(bitmap);
-            adapter.notifyDataSetChanged();
+            if (this.test.equals("YES")) {
+                film.update();
+                ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(film.bImage);
+                film.image = BitmapFactory.decodeStream(arrayInputStream);
+                Log.d("DEBUG", "YES UPDATE");
+                adapter.notifyDataSetChanged();
+//                StoreFilm task = new StoreFilm(film, adapter);
+//                task.execute();
+            } else {
+                film.setImage(bitmap);
+                adapter.notifyDataSetChanged();
+            }
         } else {
             Log.i("DEBUG", "onPostExecute, CANCEL");
         }

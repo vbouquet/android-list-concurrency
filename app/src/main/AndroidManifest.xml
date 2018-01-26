@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fr.parisnanterre.pmoo.androidm2td1">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,7 +18,13 @@
         </activity>
         <activity android:name=".activity.ListFilmThreadActivity" />
         <activity android:name=".activity.ListFilmExecutorActivity" />
-        <activity android:name=".activity.ListFilmThreadPoolExecutorActivity"></activity>
+        <activity android:name=".activity.ListFilmThreadPoolExecutorActivity"/>
+
+        <meta-data android:name="DATABASE" android:value="films.db" />
+        <meta-data android:name="VERSION" android:value="3" />
+        <!--<meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="fr.parisnanterre.pmoo.androidm2td1" />-->
     </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>
